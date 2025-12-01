@@ -109,7 +109,7 @@ public class Main {
         String objetivo = sc.nextLine();
         
         
-        System.out.print("Data de lançamento ex(2025-01-01): ");
+        System.out.print("Data de lançamento ex:(2025-01-01): ");
         String dataLanc = sc.nextLine(); 
 
         Nave nave = escolherNave();
@@ -176,7 +176,7 @@ public class Main {
         String codigo = sc.nextLine();
         
         
-        System.out.print("Data de retorno (YYYY-MM-DD): ");
+        System.out.print("Data de retorno ex:(2025-01-01): ");
         String dt = sc.nextLine();
         
         System.out.print("Resultado científico: ");
