@@ -49,7 +49,7 @@ public class Main {
         }
     }
 
-    // --- MENU EXCLUSÃO ---
+    
     private static void menuExclusao(MissaoService service) {
         boolean noMenu = true;
         while (noMenu) {
@@ -86,7 +86,7 @@ public class Main {
         }
     }
 
-    // --- MÉTODOS GERAIS ---
+    
 
     private static void listarMissoes(MissaoService service) {
         var missoes = service.listarTodas();
@@ -98,7 +98,7 @@ public class Main {
     }
 
     private static void criarMissao(MissaoService service) {
-        System.out.println("\n=== Criar nova missão ===");
+        System.out.println("\n--- Criar nova missão ---");
         System.out.print("Código da missão: ");
         String codigo = sc.nextLine();
         System.out.print("Nome da missão: ");
@@ -108,8 +108,8 @@ public class Main {
         System.out.print("Objetivo: ");
         String objetivo = sc.nextLine();
         
-        // MUDANÇA AQUI: Lê direto como String
-        System.out.print("Data de lançamento (YYYY-MM-DD): ");
+        
+        System.out.print("Data de lançamento ex(2025-01-01): ");
         String dataLanc = sc.nextLine(); 
 
         Nave nave = escolherNave();
@@ -123,12 +123,12 @@ public class Main {
             System.out.println("\nMissão criada com sucesso!");
         } catch (Exception e) {
             System.out.println("Erro ao criar missão: " + e.getMessage());
-            e.printStackTrace(); // Ajuda a ver erros detalhados se houver
+            e.printStackTrace(); 
         }
     }
 
     private static Nave escolherNave() {
-        System.out.println("\n=== Escolha do tipo de nave ===");
+        System.out.println("\n--- Escolha do tipo de nave ---");
         System.out.println("1) Nave Tripulada");
         System.out.println("2) Nave Cargueira");
         System.out.print("Tipo: ");
@@ -175,7 +175,7 @@ public class Main {
         System.out.print("Código da missão: ");
         String codigo = sc.nextLine();
         
-        // MUDANÇA AQUI: Lê direto como String
+        
         System.out.print("Data de retorno (YYYY-MM-DD): ");
         String dt = sc.nextLine();
         
