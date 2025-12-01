@@ -3,12 +3,18 @@ package com.lunarsystems.model;
 
 import java.io.Serializable;
 
+import org.dizitart.no2.objects.Id;
+
 
 public class Astronauta implements Serializable {
+    @Id
 private String nome;
 private int idade;
 private String especialidade;
 private int horasVoo;
+
+public Astronauta() {
+}   
 
 
 public Astronauta(String nome, int idade, String especialidade, int horasVoo) {
