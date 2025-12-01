@@ -16,13 +16,13 @@ public class Main {
 
         try {
             while (true) {
-                System.out.println("\n--------- CONTROLE DE MISSÕES LUNAR SYSTEMS ---------");
-                System.out.println("1) Listar missões");
-                System.out.println("2) Criar nova missão");
-                System.out.println("3) Registrar retorno da missão");
+                System.out.println("\n--------- CONTROLE DE MISSOES LUNAR SYSTEMS ---------");
+                System.out.println("1) Listar missoes");
+                System.out.println("2) Criar nova missao");
+                System.out.println("3) Registrar retorno da missao");
                 System.out.println("4) Buscar astronautas por nome");
-                System.out.println("5) Buscar missões por astronauta");
-                System.out.println("6) Listar missões com resultados científicos");
+                System.out.println("5) Buscar missoes por astronauta");
+                System.out.println("6) Listar missoes com resultados cientificos");
                 System.out.println("7) Excluir registros");
                 System.out.println("0) Sair");
                 System.out.print("Selecione: ");
@@ -53,8 +53,8 @@ public class Main {
     private static void menuExclusao(MissaoService service) {
         boolean noMenu = true;
         while (noMenu) {
-            System.out.println("\n--- MENU DE EXCLUSÃO ---");
-            System.out.println("1) Excluir Missão");
+            System.out.println("\n--- MENU DE EXCLUSAO ---");
+            System.out.println("1) Excluir Missao");
             System.out.println("2) Excluir Astronauta");
             System.out.println("3) Excluir Nave");
             System.out.println("0) Voltar");
@@ -63,7 +63,7 @@ public class Main {
 
             switch (op) {
                 case "1" -> {
-                    System.out.print("Digite o CÓDIGO da missão para excluir: ");
+                    System.out.print("Digite o CÓDIGO da missao para excluir: ");
                     String cod = sc.nextLine();
                     service.excluirMissao(cod);
                     System.out.println("Comando enviado.");
@@ -91,17 +91,17 @@ public class Main {
     private static void listarMissoes(MissaoService service) {
         var missoes = service.listarTodas();
         if (missoes.isEmpty()) {
-            System.out.println("Nenhuma missão cadastrada.");
+            System.out.println("Nenhuma missao cadastrada.");
             return;
         }
         missoes.forEach(m -> System.out.println(m));
     }
 
     private static void criarMissao(MissaoService service) {
-        System.out.println("\n--- Criar nova missão ---");
-        System.out.print("Código da missão: ");
+        System.out.println("\n--- Criar nova missao ---");
+        System.out.print("Código da missao: ");
         String codigo = sc.nextLine();
-        System.out.print("Nome da missão: ");
+        System.out.print("Nome da missao: ");
         String nome = sc.nextLine();
         System.out.print("Destino: ");
         String destino = sc.nextLine();
@@ -120,9 +120,9 @@ public class Main {
 
         try {
             service.criarMissao(m);
-            System.out.println("\nMissão criada com sucesso!");
+            System.out.println("\nMissao criada com sucesso!");
         } catch (Exception e) {
-            System.out.println("Erro ao criar missão: " + e.getMessage());
+            System.out.println("Erro ao criar missao: " + e.getMessage());
             e.printStackTrace(); 
         }
     }
@@ -172,7 +172,7 @@ public class Main {
     }
 
     private static void registrarRetorno(MissaoService service) {
-        System.out.print("Código da missão: ");
+        System.out.print("Código da missao: ");
         String codigo = sc.nextLine();
         
         
@@ -201,13 +201,13 @@ public class Main {
         System.out.print("Nome do astronauta: ");
         String nome = sc.nextLine();
         var lista = service.buscarMissoesPorAstronauta(nome);
-        if (lista.isEmpty()) System.out.println("Nenhuma missão encontrada.");
+        if (lista.isEmpty()) System.out.println("Nenhuma missao encontrada.");
         else lista.forEach(m -> System.out.println(m.getNome()));
     }
 
     private static void listarComResultado(MissaoService service) {
         var lista = service.buscarMissoesComResultado();
-        if (lista.isEmpty()) System.out.println("Nenhuma missão com resultado.");
+        if (lista.isEmpty()) System.out.println("Nenhuma missao com resultado.");
         else lista.forEach(m -> System.out.println(m.getNome() + ": " + m.getResultado()));
     }
 }
