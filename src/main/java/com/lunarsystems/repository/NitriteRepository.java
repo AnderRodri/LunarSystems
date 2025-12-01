@@ -5,7 +5,6 @@ import org.dizitart.no2.Nitrite;
 import org.dizitart.no2.objects.ObjectRepository;
 import org.dizitart.no2.objects.filters.ObjectFilters;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +48,7 @@ public class NitriteRepository {
     }
 
     
-    public void update(String codigo, LocalDate dataRetorno, String resultado) {
+    public void update(String codigo, String dataRetorno, String resultado) {
         Missao m = findByCodigo(codigo);
 
         if (m == null) return;

@@ -3,130 +3,86 @@ package com.lunarsystems.service;
 import com.lunarsystems.model.Astronauta;
 import com.lunarsystems.model.Missao;
 import com.lunarsystems.model.Nave;
-import com.lunarsystems.repository.SerializationRepository;
-import com.lunarsystems.repository.NitriteRepository;
+import org.dizitart.no2.Nitrite;
+import org.dizitart.no2.objects.ObjectRepository;
+import org.dizitart.no2.objects.filters.ObjectFilters;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class MissaoService {
 
-    private final SerializationRepository serialRepo;
-    private final NitriteRepository nitRepo;
+    private Nitrite db;
+    private ObjectRepository<Missao> missaoRepo;
+    private ObjectRepository<Astronauta> astronautaRepo;
+    private ObjectRepository<Nave> naveRepo;
 
     public MissaoService() {
+        // Inicializa o banco de dados
+        db = Nitrite.builder()
+                .compressed()
+                .filePath("lunar_system.db")
+                .openOrCreate();
 
-        Path dataDir = Paths.get("data");
-        try {
-            Files.createDirectories(dataDir);
-        } catch (IOException e) {
-            System.out.println("Erro ao criar diretório 'data': " + e.getMessage());
-        }
-
-        this.serialRepo = new SerializationRepository(Paths.get("data/missions.bin"));
-        this.nitRepo = new NitriteRepository("data/lunarsystems.db");
+        missaoRepo = db.getRepository(Missao.class);
+        astronautaRepo = db.getRepository(Astronauta.class);
+        naveRepo = db.getRepository(Nave.class);
     }
 
-    public void close() {
-        nitRepo.close();
+
+    public void excluirMissao(String codigo) {
+        missaoRepo.remove(ObjectFilters.eq("codigo", codigo));
     }
 
-    public List<Missao> listarTodas() {
-        return serialRepo.loadAll();
+    public void excluirAstronauta(String nome) {
+        astronautaRepo.remove(ObjectFilters.eq("nome", nome));
     }
 
-    public Optional<Missao> buscarPorCodigo(String codigo) {
-        return listarTodas().stream()
-                .filter(m -> m.getCodigo().equalsIgnoreCase(codigo))
-                .findFirst();
+    public void excluirNave(String id) {
+        naveRepo.remove(ObjectFilters.eq("id", id));
     }
 
     public void criarMissao(Missao m) {
-        if (buscarPorCodigo(m.getCodigo()).isPresent()) {
-            throw new IllegalArgumentException("Código de missão já existente: " + m.getCodigo());
+        missaoRepo.insert(m);
+        if(m.getNave() != null) naveRepo.update(m.getNave(), true);
+        for(Astronauta a : m.getAstronautas()) {
+            astronautaRepo.update(a, true);
         }
-
-        for (Astronauta a : m.getAstronautas()) {
-            if (a.getIdade() < 21) {
-                throw new IllegalArgumentException(
-                        "Astronauta menor de 21 anos não permitido: " + a.getNome()
-                );
-            }
-        }
-
-        Nave nave = m.getNave();
-        if (m.getAstronautas().size() > nave.getCapacidadeTripulantes()) {
-            throw new IllegalArgumentException(
-                    "A nave " + nave.getModelo() +
-                            " suporta apenas " + nave.getCapacidadeTripulantes() +
-                            " tripulantes."
-            );
-        }
-
-        serialRepo.add(m);
-        nitRepo.add(m);
     }
 
-    public void registrarRetorno(String codigo, LocalDate dataRetorno, String resultado) {
+    public List<Missao> listarTodas() {
+        return missaoRepo.find().toList();
+    }
 
-        List<Missao> todas = serialRepo.loadAll();
-        boolean encontrado = false;
-
-        for (Missao m : todas) {
-            if (m.getCodigo().equalsIgnoreCase(codigo)) {
-                m.setDataRetorno(dataRetorno);
-                m.setResultado(resultado);
-                encontrado = true;
-                break;
-            }
+    public void registrarRetorno(String codigo, String dataRetorno, String resultado) {
+        Missao m = missaoRepo.find(ObjectFilters.eq("codigo", codigo)).firstOrDefault();
+        if (m != null) {
+            m.setDataRetorno(dataRetorno);
+            m.setResultado(resultado);
+            missaoRepo.update(m);
+        } else {
+            throw new RuntimeException("Missão não encontrada: " + codigo);
         }
-
-        if (!encontrado) {
-            throw new IllegalArgumentException("Missão não encontrada: " + codigo);
-        }
-
-        serialRepo.saveAll(todas);
-
-        nitRepo.update(codigo, dataRetorno, resultado);
     }
 
     public List<Astronauta> buscarAstronautasPorNome(String nome) {
-        List<Astronauta> encontrados = new ArrayList<>();
-        for (Missao m : listarTodas()) {
-            for (Astronauta a : m.getAstronautas()) {
-                if (a.getNome().equalsIgnoreCase(nome)) {
-                    encontrados.add(a);
-                }
-            }
-        }
-        return encontrados;
+        return astronautaRepo.find(ObjectFilters.regex("nome", "(?i).*" + nome + ".*")).toList();
     }
 
-    public List<Missao> buscarMissoesPorAstronauta(String nome) {
-        List<Missao> missoes = new ArrayList<>();
-        for (Missao m : listarTodas()) {
-            for (Astronauta a : m.getAstronautas()) {
-                if (a.getNome().equalsIgnoreCase(nome)) {
-                    missoes.add(m);
-                }
-            }
-        }
-        return missoes;
+    public List<Missao> buscarMissoesPorAstronauta(String nomeAstronauta) {
+        return missaoRepo.find().toList().stream()
+                .filter(m -> m.getAstronautas().stream()
+                        .anyMatch(a -> a.getNome().equalsIgnoreCase(nomeAstronauta)))
+                .toList();
     }
 
     public List<Missao> buscarMissoesComResultado() {
-        List<Missao> missoes = new ArrayList<>();
-        for (Missao m : listarTodas()) {
-            if (m.getResultado() != null && !m.getResultado().isBlank()) {
-                missoes.add(m);
-            }
+        return missaoRepo.find(ObjectFilters.not(ObjectFilters.eq("resultado", null))).toList();
+    }
+
+    public void close() {
+        if (db != null && !db.isClosed()) {
+            db.close();
         }
-        return missoes;
     }
 }
