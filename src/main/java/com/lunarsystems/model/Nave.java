@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 public abstract class Nave implements Serializable {
 
     @Id
-    protected String id; // <--- MUDE DE PRIVATE PARA PROTECTED
+    protected String id;
     
     private String modelo;
     private int capacidadeTripulantes;
