@@ -49,7 +49,40 @@ public class Main {
         }
     }
 
-    
+    private static String lerEntradaNumerica(String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            String input = sc.nextLine();
+            if (input != null && input.matches("\\d+")) {
+                return input;
+            }
+            System.out.println("ERRO: O campo deve conter apenas números. Tente novamente.");
+        }
+    }
+
+    private static int lerInteiro(String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            try {
+                return Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERRO: Digite um número inteiro válido.");
+            }
+        }
+    }
+
+    private static double lerDecimal(String mensagem) {
+        while (true) {
+            System.out.print(mensagem);
+            try {
+                return Double.parseDouble(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("ERRO: Digite um número válido (ex: 1000.5).");
+            }
+        }
+    }
+
+
     private static void menuExclusao(MissaoService service) {
         boolean noMenu = true;
         while (noMenu) {
@@ -63,19 +96,18 @@ public class Main {
 
             switch (op) {
                 case "1" -> {
-                    System.out.print("Digite o CÓDIGO da missao para excluir: ");
-                    String cod = sc.nextLine();
+                    String cod = lerEntradaNumerica("Digite o código da missão para excluir: ");
                     service.excluirMissao(cod);
                     System.out.println("Comando enviado.");
                 }
                 case "2" -> {
-                    System.out.print("Digite o NOME do astronauta para excluir: ");
+                    System.out.print("Digite o nome do astronauta para excluir: ");
                     String nome = sc.nextLine();
                     service.excluirAstronauta(nome);
                     System.out.println("Comando enviado.");
                 }
                 case "3" -> {
-                    System.out.print("Digite o ID da nave para excluir: ");
+                    System.out.print("Digite o id da nave para excluir: ");
                     String id = sc.nextLine();
                     service.excluirNave(id);
                     System.out.println("Comando enviado.");
@@ -86,99 +118,117 @@ public class Main {
         }
     }
 
-    
-
     private static void listarMissoes(MissaoService service) {
         var missoes = service.listarTodas();
         if (missoes.isEmpty()) {
             System.out.println("Nenhuma missao cadastrada.");
             return;
         }
-        missoes.forEach(m -> System.out.println(m));
+        missoes.forEach(System.out::println);
     }
 
     private static void criarMissao(MissaoService service) {
         System.out.println("\n--- Criar nova missao ---");
-        System.out.print("Código da missao: ");
-        String codigo = sc.nextLine();
-        System.out.print("Nome da missao: ");
+
+        String codigo = lerEntradaNumerica("Código da missao (apenas números): ");
+
+        System.out.print("Nome da missão: ");
         String nome = sc.nextLine();
         System.out.print("Destino: ");
         String destino = sc.nextLine();
         System.out.print("Objetivo: ");
         String objetivo = sc.nextLine();
-        
-        
+
         System.out.print("Data de lançamento ex:(2025-01-01): ");
-        String dataLanc = sc.nextLine(); 
+        String dataLanc = sc.nextLine();
+
 
         Nave nave = escolherNave();
-        List<Astronauta> astronautas = cadastrarAstronautas();
 
-        Missao m = new Missao(codigo, nome, dataLanc, destino, objetivo, nave);
-        astronautas.forEach(m::addAstronauta);
+        List<Astronauta> astronautas = cadastrarAstronautas(nave.getCapacidadeTripulantes());
 
         try {
+            Missao m = new Missao(codigo, nome, dataLanc, destino, objetivo, nave);
+
+            astronautas.forEach(m::addAstronauta);
+
             service.criarMissao(m);
             System.out.println("\nMissao criada com sucesso!");
         } catch (Exception e) {
             System.out.println("Erro ao criar missao: " + e.getMessage());
-            e.printStackTrace(); 
+            e.printStackTrace();
         }
     }
-
     private static Nave escolherNave() {
         System.out.println("\n--- Escolha do tipo de nave ---");
         System.out.println("1) Nave Tripulada");
         System.out.println("2) Nave Cargueira");
         System.out.print("Tipo: ");
         String tipo = sc.nextLine();
-        System.out.print("ID da nave: ");
-        String id = sc.nextLine();
+
+        String id = lerEntradaNumerica("ID da nave (apenas números): ");
+
         System.out.print("Modelo: ");
         String modelo = sc.nextLine();
-        System.out.print("Capacidade de tripulantes: ");
-        int cap = Integer.parseInt(sc.nextLine());
 
-        return switch (tipo) {
-            case "1" -> new NaveTripulada(id, modelo, cap);
-            case "2" -> {
-                System.out.print("Capacidade de carga (kg): ");
-                double carga = Double.parseDouble(sc.nextLine());
-                yield new NaveCargueira(id, modelo, cap, carga);
-            }
-            default -> new NaveTripulada(id, modelo, cap);
-        };
+        int cap = lerInteiro("Capacidade de tripulantes: ");
+
+        Nave naveEscolhida;
+
+        switch (tipo) {
+            case "2":
+                double carga = lerDecimal("Capacidade de carga (kg): ");
+                naveEscolhida = new NaveCargueira(id, modelo, cap, carga);
+                break;
+
+            case "1":
+            default:
+                naveEscolhida = new NaveTripulada(id, modelo, cap);
+                break;
+        }
+
+        return naveEscolhida;
     }
 
-    private static List<Astronauta> cadastrarAstronautas() {
+    private static List<Astronauta> cadastrarAstronautas(int capacidadeNecessaria) {
         List<Astronauta> lista = new ArrayList<>();
-        System.out.print("Quantos astronautas? ");
-        int qtd = Integer.parseInt(sc.nextLine());
 
-        for (int i = 0; i < qtd; i++) {
-            System.out.println("Astronauta #" + (i + 1));
+        System.out.println("\n--- Cadastro de Tripulação ---");
+        System.out.println("A nave selecionada comporta e EXIGE exatamente " + capacidadeNecessaria + " astronautas.");
+
+
+        for (int i = 0; i < capacidadeNecessaria; i++) {
+            System.out.println("\nAstronauta #" + (i + 1) + " de " + capacidadeNecessaria);
+
             System.out.print("Nome: ");
             String nome = sc.nextLine();
-            System.out.print("Idade: ");
-            int idade = Integer.parseInt(sc.nextLine());
+
+            int idade;
+            while (true) {
+                idade = lerInteiro("Idade: ");
+                if (idade >= 21) break;
+                System.out.println("ERRO: A idade mínima permitida é 21 anos.");
+            }
+
             System.out.print("Especialidade: ");
             String esp = sc.nextLine();
-            System.out.print("Horas de voo: ");
-            int horas = Integer.parseInt(sc.nextLine());
-            lista.add(new Astronauta(nome, idade, esp, horas));
+
+            int horas = lerInteiro("Horas de voo: ");
+
+            try {
+                lista.add(new Astronauta(nome, idade, esp, horas));
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
         }
         return lista;
     }
-
     private static void registrarRetorno(MissaoService service) {
-        System.out.print("Código da missao: ");
-        String codigo = sc.nextLine();
-        
-        
+        String codigo = lerEntradaNumerica("Código da missao (apenas números): ");
+
         System.out.print("Data de retorno ex:(2025-01-01): ");
         String dt = sc.nextLine();
-        
+
         System.out.print("Resultado científico: ");
         String res = sc.nextLine();
         try {
